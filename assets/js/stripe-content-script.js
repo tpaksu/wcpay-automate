@@ -21,15 +21,17 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
                     document.querySelector('input[name="expiry"]');
                 const CVCinput = document.querySelector('input[name="cvc"]');
                 if (cardInput && request.card_number) {
+                    const expirationYear = new Date().getFullYear() % 100;
                     fillInput(cardInput, request.card_number);
                     fillInput(
                         expInput,
-                        randBetween(1, 12) +
-                            '/' +
+                        [
+                            randBetween(1, 12),
                             randBetween(
-                                (new Date().getFullYear() % 100) + 1,
-                                60
-                            )
+                                expirationYear + 1,
+                                expirationYear + 50
+                            ),
+                        ].join('/')
                     );
                     fillInput(CVCinput, randBetween(100, 999));
                 }
