@@ -1,0 +1,28 @@
+{
+    "name": "WCPay Automate!",
+    "description": "A WCPay automation extension!",
+    "version": "1.0",
+    "manifest_version": 3,
+    "icons": {
+        "48": "/assets/icons/48.png",
+        "128": "/assets/icons/128.png"
+    },
+    "permissions": [
+        "contextMenus",
+        "activeTab"
+    ],
+    "background": {
+        "service_worker": "assets/js/background.js"
+    },
+    "content_scripts": [
+        {
+            "matches": [
+                "https://js.stripe.com/*"
+            ],
+            "js": [
+                "assets/js/stripe-content-script.js"
+            ],
+            "all_frames": true
+        }
+    ]
+}
