@@ -1,5 +1,7 @@
 # WCPay Automate! - A Chrome extension
 
+![image](https://github.com/tpaksu/wcpay-automate/assets/3295/a0fde9fd-1605-4797-8e0f-b9f4ed74a130)
+
 Enables easy filling of Stripe test cards via a context menu.
 
 # How to use
