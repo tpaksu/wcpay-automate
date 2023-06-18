@@ -6,12 +6,15 @@ Enables easy filling of Stripe test cards via a context menu.
 
 # How to use
 
-## setup
+## Setting up
 ```
 $ git clone https://github.com/tpaksu/wcpay-automate
 $ cd wcpay-automate
 ```
-## on Chrome Browser
+
+or, if you don't want to contribute, and use this only, directly download the ZIP into a folder and follow the steps below.
+
+## Installing on Chrome Browser
 
 1. Go `chrome://extensions/`
 2. Check `Developer mode`
@@ -22,3 +25,5 @@ This extension will add a context menu on pages matching these patterns:
 
 http://*/checkout/*
 https://*/checkout/*
+
+If you want to use it on the Incognito browsers too, don't forget to allow it in the extension details page.
