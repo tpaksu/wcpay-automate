@@ -23,7 +23,9 @@ or, if you don't want to contribute, and use this only, directly download the ZI
 
 This extension will add a context menu on pages matching these patterns: 
 
+```
 http://*/checkout/*
 https://*/checkout/*
+```
 
 If you want to use it on the Incognito browsers too, don't forget to allow it in the extension details page.
