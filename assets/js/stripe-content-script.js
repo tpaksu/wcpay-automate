@@ -1,6 +1,6 @@
 chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
-    const randBetween = (start, end) => {
-        return Math.floor(Math.random() * end) + start;
+    const randBetween = (min, max) => {
+        return Math.floor(Math.random() * (max - min + 1) + min)
     };
     const fillInput = (element, text) => {
         if (element) {
@@ -38,4 +38,5 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
                 break;
         }
     }
+    sendResponse('ack');
 });

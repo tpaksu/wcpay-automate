@@ -75,59 +75,69 @@ const StripeTestCards = {
 };
 
 chrome.runtime.onInstalled.addListener(() => {
-    const convert_to_key = (text) => {
+    const makeKey = (text) => {
         return text
             .toLowerCase()
             .replace(/[^a-zA-Z0-9]+(.)/g, (m, chr) => '-' + chr)
             .trim();
     };
 
-    const set_card_fields = (number) => {
-        (async () => {
-            const [tab] = await chrome.tabs.query({
-                active: true,
-                lastFocusedWindow: true,
-            });
-            await chrome.tabs.sendMessage(tab.id, {
-                action_type: 'wcpay_fill_card_number',
-                card_number: number,
-            });
-        })();
+    const sendMessage = async (message) => {
+        const [tab] = await chrome.tabs.query({
+            active: true,
+            lastFocusedWindow: true,
+        });
+        await chrome.tabs.sendMessage(tab.id, message);
     };
 
-    chrome.contextMenus.create({
-        title: 'Stripe test cards',
-        id: 'wcpay_test_cards',
-        documentUrlPatterns: ['http://*/checkout/*', 'https://*/checkout/*'],
-    });
-
-    for (let category in StripeTestCards) {
-        const categoryKey = convert_to_key(category);
-        chrome.contextMenus.create({
-            title: category,
-            id: categoryKey,
-            parentId: 'wcpay_test_cards',
+    const setCardFields = (number) => {
+        sendMessage({
+            action_type: 'wcpay_fill_card_number',
+            card_number: number,
         });
-        for (let cardDescription in StripeTestCards[category]) {
+    };
+
+    setTimeout(async () => {
+        sendMessage({
+            action_type: 'wcpay_keep_alive',
+        });
+    }, 10000);
+
+    const createMenus = () => {
+        chrome.contextMenus.create({
+            title: 'Stripe test cards',
+            id: 'wcpay_test_cards',
+            documentUrlPatterns: [
+                'http://*/checkout/*',
+                'https://*/checkout/*',
+            ],
+        });
+
+        for (let category in StripeTestCards) {
+            const categoryKey = makeKey(category);
             chrome.contextMenus.create({
-                title: cardDescription,
-                id: convert_to_key(cardDescription),
-                parentId: categoryKey,
+                title: category,
+                id: categoryKey,
+                parentId: 'wcpay_test_cards',
             });
+            for (let cardDescription in StripeTestCards[category]) {
+                chrome.contextMenus.create({
+                    title: cardDescription,
+                    id: makeKey(cardDescription),
+                    parentId: categoryKey,
+                });
+            }
         }
-    }
+    };
 
     chrome.contextMenus.onClicked.addListener((clickData) => {
-        console.log(clickData);
         const parentId = clickData.parentMenuItemId;
         const menuId = clickData.menuItemId;
         for (let category in StripeTestCards) {
-            if (parentId === convert_to_key(category)) {
-                console.log(parentId, category);
+            if (parentId === makeKey(category)) {
                 for (let cardDescription in StripeTestCards[category]) {
-                    if (menuId === convert_to_key(cardDescription)) {
-                        console.log(menuId, cardDescription);
-                        set_card_fields(
+                    if (menuId === makeKey(cardDescription)) {
+                        setCardFields(
                             StripeTestCards[category][cardDescription]
                         );
                         break;
@@ -137,4 +147,6 @@ chrome.runtime.onInstalled.addListener(() => {
             }
         }
     });
+    
+    createMenus();
 });
