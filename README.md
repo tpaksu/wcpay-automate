@@ -21,11 +21,6 @@ or, if you don't want to contribute, and use this only, directly download the ZI
 3. Click `Load unpacked extension...`
 4. Load `wcpay-automate`
 
-This extension will add a context menu on pages matching these patterns: 
-
-```
-http://*/checkout/*
-https://*/checkout/*
-```
+This extension will add a context menu on all pages, which can be used to fill WCPay payment forms with test card numbers.
 
 If you want to use it on the Incognito browsers too, don't forget to allow it in the extension details page.
