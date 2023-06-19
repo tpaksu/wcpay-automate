@@ -1,3 +1,7 @@
+/**
+ * Stripe test cards list by category => description => number.
+ * The content script will fill the expiry date and CVC randomly.
+ */
 const StripeTestCards = {
     'Cards by brands': {
         'Visa - 4242424242424242': '4242424242424242',
@@ -74,79 +78,84 @@ const StripeTestCards = {
     },
 };
 
-chrome.runtime.onInstalled.addListener(() => {
-    const makeKey = (text) => {
-        return text
-            .toLowerCase()
-            .replace(/[^a-zA-Z0-9]+(.)/g, (m, chr) => '-' + chr)
-            .trim();
-    };
+// Converts strings to keys.
+const makeKey = (text) => {
+    return text
+        .toLowerCase()
+        .replace(/[^a-zA-Z0-9]+(.)/g, (m, chr) => '-' + chr)
+        .trim();
+};
 
-    const sendMessage = async (message) => {
+// Chrome sendmessage wrapper for the current active tab.
+const sendMessage = async (message) => {
+    try {
         const [tab] = await chrome.tabs.query({
             active: true,
-            lastFocusedWindow: true,
+            currentWindow: true,
         });
         await chrome.tabs.sendMessage(tab.id, message);
-    };
+    } catch (err) {}
+};
 
-    const setCardFields = (number) => {
-        sendMessage({
-            action_type: 'wcpay_fill_card_number',
-            card_number: number,
-        });
-    };
-
-    setTimeout(async () => {
-        sendMessage({
-            action_type: 'wcpay_keep_alive',
-        });
-    }, 10000);
-
-    const createMenus = () => {
-        chrome.contextMenus.create({
-            title: 'Stripe test cards',
-            id: 'wcpay_test_cards',
-            documentUrlPatterns: [
-                'http://*/checkout/*',
-                'https://*/checkout/*',
-            ],
-        });
-
-        for (let category in StripeTestCards) {
-            const categoryKey = makeKey(category);
-            chrome.contextMenus.create({
-                title: category,
-                id: categoryKey,
-                parentId: 'wcpay_test_cards',
-            });
-            for (let cardDescription in StripeTestCards[category]) {
-                chrome.contextMenus.create({
-                    title: cardDescription,
-                    id: makeKey(cardDescription),
-                    parentId: categoryKey,
-                });
-            }
-        }
-    };
-
-    chrome.contextMenus.onClicked.addListener((clickData) => {
-        const parentId = clickData.parentMenuItemId;
-        const menuId = clickData.menuItemId;
-        for (let category in StripeTestCards) {
-            if (parentId === makeKey(category)) {
-                for (let cardDescription in StripeTestCards[category]) {
-                    if (menuId === makeKey(cardDescription)) {
-                        setCardFields(
-                            StripeTestCards[category][cardDescription]
-                        );
-                        break;
-                    }
-                }
-                break;
-            }
-        }
+// Sends the card number update message.
+const setCardFields = (number) => {
+    sendMessage({
+        action_type: 'wcpay_fill_card_number',
+        card_number: number,
     });
-    
-    createMenus();
+};
+
+// Creates the context menus.
+const createMenus = () => {
+    chrome.contextMenus.create({
+        title: 'Stripe test cards',
+        id: 'wcpay_test_cards',
+    });
+
+    for (let category in StripeTestCards) {
+        const categoryKey = makeKey(category);
+        chrome.contextMenus.create({
+            title: category,
+            id: categoryKey,
+            parentId: 'wcpay_test_cards',
+        });
+        for (let cardDescription in StripeTestCards[category]) {
+            chrome.contextMenus.create({
+                title: cardDescription,
+                id: makeKey(cardDescription),
+                parentId: categoryKey,
+            });
+        }
+    }
+};
+
+createMenus();
+
+chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
+    if (sender.tab) {
+        switch (request.action_type) {
+            case 'wcpay_keep_alive':
+                sendResponse({ status: 'ok' });
+                break;
+            default:
+                sendResponse({ status: 'ok' });
+                break;
+        }
+    }
+});
+
+chrome.contextMenus.onClicked.addListener((clickData) => {
+    const parentId = clickData.parentMenuItemId;
+    const menuId = clickData.menuItemId;
+    for (let category in StripeTestCards) {
+        if (parentId === makeKey(category)) {
+            for (let cardDescription in StripeTestCards[category]) {
+                if (menuId === makeKey(cardDescription)) {
+                    setCardFields(StripeTestCards[category][cardDescription]);
+                    break;
+                }
+            }
+            break;
+        }
+    }
 });

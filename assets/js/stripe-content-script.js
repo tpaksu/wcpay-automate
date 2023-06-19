@@ -1,6 +1,6 @@
 chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
     const randBetween = (min, max) => {
-        return Math.floor(Math.random() * (max - min + 1) + min)
+        return Math.floor(Math.random() * (max - min + 1) + min);
     };
     const fillInput = (element, text) => {
         if (element) {
@@ -8,6 +8,7 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
             element.select();
             document.execCommand('insertText', false, text);
             element.dispatchEvent(new Event('change', { bubbles: true }));
+            element.blur();
         }
     };
     if (request.action_type) {
@@ -35,8 +36,22 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
                     );
                     fillInput(CVCinput, randBetween(100, 999));
                 }
+                sendResponse({ status: 'ok' });
+                break;
+            default:
+                sendResponse({ status: 'ok' });
                 break;
         }
     }
-    sendResponse('ack');
 });
+
+const keepAliveInterval = setInterval(() => {
+    try {
+        chrome.runtime.sendMessage({
+            action_type: 'wcpay_keep_alive',
+            time: Date.now(),
+        });
+    } catch (err) {
+        clearInterval(keepAliveInterval);
+    }
+}, 15000);
